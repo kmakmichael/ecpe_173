@@ -10,8 +10,6 @@ set_4		dcd		501
 			;		r1	current number
 			;		r2	<15
 			;		r5	>= 15
-			
-			
 			adr		r0, set_1		; change the dataset here
 			mov		r1, #0
 			mov		r2, #0
