@@ -21,6 +21,12 @@ module alu(
     //shift xshift(ALUOp[1:0],A,B,shiftout);
 
     // outputs
-    assign Y = arithout;
+    always_comb begin
+        if (ALUOp[4]) begin
+            Y <= boolout;
+        end else begin
+            Y <= arithout;
+        end
+    end
 
 endmodule
