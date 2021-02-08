@@ -16,14 +16,11 @@ module alu(
 
     // modules
     bool xbool(ALUOp[3:0],A,B,boolout);
-    //arith xarith(ALUOp[1:0],A,B,arithout,z,v,n);
+    arith xarith(ALUOp[1:0],A,B,arithout,z,v,n);
     //comp xcomp(ALUOp[3], ALUOp[1], z,v,n,compout);
     //shift xshift(ALUOp[1:0],A,B,shiftout);
 
     // outputs
-    assign Y = boolout;
-    assign z = 1'b0;
-    assign v = 1'b0;
-    assign n = 1'b0;
+    assign Y = arithout;
 
 endmodule
