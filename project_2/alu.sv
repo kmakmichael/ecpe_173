@@ -12,12 +12,12 @@ module alu(
     logic [31:0] boolout;
     logic [31:0] shiftout;
     logic [31:0] arithout;
-    logic [31:0] comput;
+    logic [31:0] compout;
 
     // modules
     bool xbool(ALUOp[3:0],A,B,boolout);
     arith xarith(ALUOp[1:0],A,B,arithout,z,v,n);
-    //comp xcomp(ALUOp[3], ALUOp[1], z,v,n,compout);
+    comp xcomp(ALUOp[3], ALUOp[1], z,v,n,compout);
     //shift xshift(ALUOp[1:0],A,B,shiftout);
 
     // outputs
@@ -25,7 +25,13 @@ module alu(
         if (ALUOp[4]) begin
             Y <= boolout;
         end else begin
-            Y <= arithout;
+            if (ALUOp[2]) begin
+                Y <= compout;
+            end else if (ALUOp[3]) begin
+                Y <= shiftout;
+            end else begin
+                Y <= arithout;
+            end
         end
     end
 
