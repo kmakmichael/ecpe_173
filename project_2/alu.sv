@@ -18,7 +18,7 @@ module alu(
     bool xbool(ALUOp[3:0],A,B,boolout);
     arith xarith(ALUOp[1:0],A,B,arithout,z,v,n);
     comp xcomp(ALUOp[3], ALUOp[1], z,v,n,compout);
-    //shift xshift(ALUOp[1:0],A,B,shiftout);
+    shift xshift(ALUOp[1:0],A,B,shiftout);
 
     // outputs
     always_comb begin
