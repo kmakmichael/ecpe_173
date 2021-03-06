@@ -53,7 +53,7 @@ module ctl(
     always_comb begin
         case (opCode)
             6'b001000, // addi
-            6'b001100, // adi
+            6'b001100, // andi
             6'b001101, // ori
             6'b001110, // xori
             6'b100011: // lw
