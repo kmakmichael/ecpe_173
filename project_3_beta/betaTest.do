@@ -112,6 +112,10 @@ if "$condSigP==0" {
 }
 
 #### Add your debug signals here ####
+add wave -radix hex dutBeta/A
+add wave -radix hex dutBeta/B
+add wave -radix hex dutBeta/Y
+
 
 # Plot signal values
 view structure
