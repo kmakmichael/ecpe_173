@@ -8,8 +8,9 @@ module ctl(
     output logic MemWrite,
     output logic MemRead,
     output logic MemToReg,
-    output logic [4:0] ALUOp,
-    output logic excp
+    output logic ASel,
+    output logic Exception,
+    output logic [4:0] ALUOp
 );
 
     // RegDst
@@ -158,6 +159,14 @@ module ctl(
         end
     end
 
+    // ASel
+    always_comb begin
+        if (opCode == 6'b000000 && funct == 6'b001001) // jr
+            ASel <= 1'b1;
+        else
+            ASel <= 1'b0;
+    end
+
     // exceptions
     always_comb begin
         case (opCode)
@@ -171,7 +180,7 @@ module ctl(
             6'b000011, // jal
             6'b000100, // beq
             6'b000101: // bne
-                excp <= 1'b0;
+                Exception <= 1'b0;
             6'b000000:
                 case (funct)
                     6'b100000, // add
@@ -185,12 +194,12 @@ module ctl(
                     6'b000010, // srl
                     6'b000011, // sra
                     6'b001001: // jr
-                        excp <= 1'b0;
+                        Exception <= 1'b0;
                     default:
-                        excp <= 1'b1;
+                        Exception <= 1'b1;
                 endcase
             default:
-                excp <= 1'b1;
+                Exception <= 1'b1;
         endcase
     end
 
