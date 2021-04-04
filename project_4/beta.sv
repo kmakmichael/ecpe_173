@@ -14,7 +14,7 @@ module beta(
     logic RegWrite, MemToReg, z, v, n, Exception, Branch, Jump;
     logic [1:0] RegDst, ALUSrc;
     logic [4:0] ALUOp;
-    logic [31:0] A, B, Y, radata, rbdata, wdata, pcin, pcp4; //, imm;
+    logic [31:0] A, B, Y, radata, rbdata, wdata, pcin, pcp4, brAddr; //, imm;
     logic [5:0] rc;
 
     // modules
@@ -27,6 +27,7 @@ module beta(
     assign memWriteData = rbdata;
     assign memAddr = Y;
     assign pcp4 = ia + 32'd4;
+    assign brAddr = 32'd0;
 
     // A
     always_comb begin
@@ -62,6 +63,20 @@ module beta(
             wdata <= memReadData;
         else
             wdata <= Y;
+    end
+
+    // jump mux
+    always_comb begin
+        case (Jump)
+            2'b00:  // none
+                pcin <= pcp4;
+            2'b01:  // branch
+                pcin <= brAddr;
+            2'b10:  // j
+                pcin <= {pcp4[31:28], (id[25:0] << 2)};
+            2'b11:  // jr
+                pcin <= radata;
+        endcase
     end
 
     // pad or extend
