@@ -10,7 +10,7 @@ module ctl(
     output logic MemToReg,
     output logic ASel,
     output logic Branch,
-    output logic Jump,
+    output logic [1:0] Jump,
     output logic Exception,
     output logic [4:0] ALUOp
 );
@@ -40,9 +40,7 @@ module ctl(
             6'b001101, // ori
             6'b001110, // xori
             6'b100011, // lw
-            6'b101011, // sw
-            6'b000100, // beq
-            6'b000101: // bne
+            6'b101011: // sw
                 ALUSrc <= 2'b10 & {~reset, ~reset};
             6'b000000:
                 case (funct)
@@ -154,8 +152,9 @@ module ctl(
                 6'b001110:  ALUOp <= 5'b10110;  // xori
                 6'b100011:  ALUOp <= 5'b00000;  // lw
                 6'b101011:  ALUOp <= 5'b00000;  // sw
-                6'b000100:  ALUOp <= 5'b00101;  // beq
-                6'b000100:  ALUOp <= 5'b00101;  // bne
+                6'b000010:  ALUOp <= 5'b00000;  // j
+                6'b000100:  ALUOp <= 5'b00001;  // beq
+                6'b000101:  ALUOp <= 5'b00001;  // bne
                 default:    ALUOp <= 5'b00000;  // nop
             endcase
         end

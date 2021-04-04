@@ -11,8 +11,8 @@ module beta(
     output logic MemWrite
 );
     // signals
-    logic RegWrite, MemToReg, z, v, n, Exception, Branch, Jump;
-    logic [1:0] RegDst, ALUSrc;
+    logic RegWrite, MemToReg, z, v, n, Exception, Branch;
+    logic [1:0] RegDst, ALUSrc, Jump;
     logic [4:0] ALUOp;
     logic [31:0] A, B, Y, radata, rbdata, wdata, pcin, pcp4, brAddr; //, imm;
     logic [5:0] rc;
@@ -27,7 +27,6 @@ module beta(
     assign memWriteData = rbdata;
     assign memAddr = Y;
     assign pcp4 = ia + 32'd4;
-    assign brAddr = 32'd0;
 
     // A
     always_comb begin
@@ -65,18 +64,35 @@ module beta(
             wdata <= Y;
     end
 
-    // jump mux
+    // Jump mux
     always_comb begin
         case (Jump)
             2'b00:  // none
-                pcin <= pcp4;
+                pcin <= brAddr;
             2'b01:  // branch
                 pcin <= brAddr;
             2'b10:  // j
-                pcin <= {pcp4[31:28], (id[25:0] << 2)};
+                pcin <= {pcp4[31:28], id[25:0], 2'b00};
             2'b11:  // jr
                 pcin <= radata;
         endcase
+    end
+
+    // Branch ctl
+    always_comb begin
+        if (Branch) begin
+            if (id[26] != z) begin
+                if (id[15]) begin //sign-extend
+                    brAddr <= pcp4 + {15'h7FFF, id[14:0], 2'b00};
+                end else begin
+                    brAddr <= pcp4 + {15'd0, id[14:0], 2'b00};
+                end
+            end else begin
+                brAddr <= pcp4;
+            end
+        end else begin
+            brAddr <= pcp4;
+        end
     end
 
     // pad or extend
