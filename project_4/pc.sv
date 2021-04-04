@@ -6,7 +6,7 @@ module pc(
     input logic [31:0] pcin,
     output logic [31:0] ia
 );
-    always_ff @(posedge clk or posedge reset or posedge irq or posedge Exception) begin
+    always_ff @(posedge clk or posedge reset or posedge irq) begin
         if (reset) begin
             ia <= 32'h8000_0000;
         end else if (irq) begin

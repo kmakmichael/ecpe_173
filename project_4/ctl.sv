@@ -153,6 +153,7 @@ module ctl(
                 6'b100011:  ALUOp <= 5'b00000;  // lw
                 6'b101011:  ALUOp <= 5'b00000;  // sw
                 6'b000010:  ALUOp <= 5'b00000;  // j
+                6'b000011:  ALUOp <= 5'b00000;  // jal
                 6'b000100:  ALUOp <= 5'b00001;  // beq
                 6'b000101:  ALUOp <= 5'b00001;  // bne
                 default:    ALUOp <= 5'b00000;  // nop
@@ -162,10 +163,11 @@ module ctl(
 
     // ASel
     always_comb begin
-        if (opCode == 6'b000000 && funct == 6'b001001) // jr
+        if (opCode == 6'b000011) begin // jal
             ASel <= 1'b1;
-        else
+        end else begin
             ASel <= 1'b0;
+        end
     end
 
     // exceptions
@@ -194,7 +196,7 @@ module ctl(
                     6'b000000, // sll
                     6'b000010, // srl
                     6'b000011, // sra
-                    6'b001001: // jr
+                    6'b001000: // jr
                         Exception <= 1'b0;
                     default:
                         Exception <= 1'b1;
@@ -222,7 +224,7 @@ module ctl(
             6'b000011: // jal
                 Jump <= 2'b10;
             6'b000000:
-                if (funct == 6'b001001) begin
+                if (funct == 6'b001000) begin
                     Jump <= 2'b11; // jr
                 end else begin
                     Jump <= 2'b00;

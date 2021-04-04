@@ -11,7 +11,7 @@ module beta(
     output logic MemWrite
 );
     // signals
-    logic RegWrite, MemToReg, z, v, n, Exception, Branch;
+    logic RegWrite, MemToReg, z, v, n, ASel, Exception, Branch;
     logic [1:0] RegDst, ALUSrc, Jump;
     logic [4:0] ALUOp;
     logic [31:0] A, B, Y, radata, rbdata, wdata, pcin, pcp4, brAddr; //, imm;
@@ -71,7 +71,7 @@ module beta(
                 pcin <= brAddr;
             2'b01:  // branch
                 pcin <= brAddr;
-            2'b10:  // j
+            2'b10:  // j, jal
                 pcin <= {pcp4[31:28], id[25:0], 2'b00};
             2'b11:  // jr
                 pcin <= radata;
@@ -95,31 +95,4 @@ module beta(
         end
     end
 
-    // pad or extend
-    /*always_comb begin
-        case(id[31:26])
-            6'b000000:
-                case (id[5:0])
-                    6'b000000,
-                    6'b000010,
-                    6'b000011: // shifts
-                        imm <= {26'd0, id[11:6]};
-                    default:
-                        imm <= 32'd0;
-                endcase
-            6'b001000: // addi
-                if (id[15])
-                    imm <= {17'h1FFFF, id[14:0]};
-                else
-                    imm <= {17'd0, id[14:0]};
-            6'b001100, // andi
-            6'b001101, // ori
-            6'b001110, // xori
-            6'b100011,  // lw
-            6'b101011:  // sw
-                imm <= {16'd0, id[15:0]};
-            default:
-                imm <= 32'd0;
-        endcase
-    end*/
 endmodule
