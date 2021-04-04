@@ -7,7 +7,7 @@ vlog -reportprogress 300 -work work comp.sv
 vlog -reportprogress 300 -work work shift.sv
 vlog -reportprogress 300 -work work alu.sv
 vlog -reportprogress 300 -work work pc.sv
-vlog -reportprogress 300 -work work —suppress 7061 regfile.sv
+vlog -reportprogress 300 -work work -suppress 7061 regfile.sv
 vlog -reportprogress 300 -work work ctl.sv
 vlog -reportprogress 300 -work work beta.sv
 	
