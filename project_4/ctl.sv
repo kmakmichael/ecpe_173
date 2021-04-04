@@ -9,6 +9,8 @@ module ctl(
     output logic MemRead,
     output logic MemToReg,
     output logic ASel,
+    output logic Branch,
+    output logic Jump,
     output logic Exception,
     output logic [4:0] ALUOp
 );
@@ -200,6 +202,37 @@ module ctl(
                 endcase
             default:
                 Exception <= 1'b1;
+        endcase
+    end
+
+    // Branch
+    always_comb begin
+        case (opCode)
+            6'b000100, // beq
+            6'b000101: // bne
+                Branch <= 1'b1;
+            default:
+                Branch <= 1'b0;
+        endcase
+    end
+
+    // Jump
+    always_comb begin
+        case(opCode)
+            6'b000010, // j
+            6'b000011: // jal
+                Jump <= 2'b10;
+            6'b000000:
+                if (funct == 6'b001001) begin
+                    Jump <= 2'b11; // jr
+                end else begin
+                    Jump <= 2'b00;
+                end
+            6'b000100, // beq
+            6'b000101: // bne
+                Jump <= 2'b01;
+            default:
+                Jump <= 2'b00;
         endcase
     end
 

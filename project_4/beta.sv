@@ -11,7 +11,7 @@ module beta(
     output logic MemWrite
 );
     // signals
-    logic RegWrite, MemToReg, z, v, n, Exception;
+    logic RegWrite, MemToReg, z, v, n, Exception, Branch, Jump;
     logic [1:0] RegDst, ALUSrc;
     logic [4:0] ALUOp;
     logic [31:0] A, B, Y, rbdata, wdata, pcin, pcp4; //, imm;
@@ -19,7 +19,7 @@ module beta(
 
     // modules
     alu xalu(A, B, ALUOp, Y, z, v, n);
-    ctl xctl(reset, id[31:26], id[5:0], RegDst, ALUSrc, RegWrite, MemWrite, MemRead, MemToReg, ASel, Exception, ALUOp);
+    ctl xctl(reset, id[31:26], id[5:0], RegDst, ALUSrc, RegWrite, MemWrite, MemRead, MemToReg, ASel, Branch, Jump, Exception, ALUOp);
     pc xpc(clk, reset, irq, Exception, pcin, ia);
     regfile xregfile(clk, RegWrite, RegDst, id[25:21], id[20:16], id[15:11], wdata, A, rbdata);
 
