@@ -14,18 +14,19 @@ module beta(
     logic RegWrite, MemToReg, z, v, n, Exception;
     logic [1:0] RegDst, ALUSrc;
     logic [4:0] ALUOp;
-    logic [31:0] A, B, Y, rbdata, wdata; //, imm;
+    logic [31:0] A, B, Y, rbdata, wdata, pcin, pcp4; //, imm;
     logic [5:0] rc;
 
     // modules
     alu xalu(A, B, ALUOp, Y, z, v, n);
     ctl xctl(reset, id[31:26], id[5:0], RegDst, ALUSrc, RegWrite, MemWrite, MemRead, MemToReg, ASel, Exception, ALUOp);
-    pc xpc(clk, reset, irq, Exception, ia);
+    pc xpc(clk, reset, irq, Exception, pcin, ia);
     regfile xregfile(clk, RegWrite, RegDst, id[25:21], id[20:16], id[15:11], wdata, A, rbdata);
 
     // assign
     assign memWriteData = rbdata;
     assign memAddr = Y;
+    assign pcp4 = ia + 32'd4;
 
     // B
     always_comb begin
