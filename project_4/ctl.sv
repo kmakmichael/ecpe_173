@@ -59,7 +59,8 @@ module ctl(
             6'b001100, // andi
             6'b001101, // ori
             6'b001110, // xori
-            6'b100011: // lw
+            6'b100011, // lw
+            6'b000011: // jal
                 RegWrite <= 1'b1 & ~reset;
             6'b000000:
                 case (funct)
