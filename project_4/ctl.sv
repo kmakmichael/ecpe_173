@@ -8,7 +8,8 @@ module ctl(
     output logic MemWrite,
     output logic MemRead,
     output logic MemToReg,
-    output logic [4:0] ALUOp
+    output logic [4:0] ALUOp,
+    output logic excp
 );
 
     // RegDst

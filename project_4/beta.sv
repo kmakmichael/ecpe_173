@@ -1,6 +1,7 @@
 module beta(
     input logic clk,
     input logic reset,
+    input logic irq,
     input logic [31:0] id,
     input logic [31:0] memReadData,
     output logic [31:0] ia,
@@ -17,8 +18,8 @@ module beta(
 
     // modules
     alu xalu(A, B, ALUOp, Y, z, v, n);
-    ctl xctl(reset, id[31:26], id[5:0], RegDst, ALUSrc, RegWrite, MemWrite, MemRead, MemToReg, ALUOp);
-    pc xpc(clk, reset, ia);
+    ctl xctl(reset, id[31:26], id[5:0], RegDst, ALUSrc, RegWrite, MemWrite, MemRead, MemToReg, ALUOp, ecxp);
+    pc xpc(clk, reset, irq, ia);
     regfile xregfile(clk, RegWrite, RegDst, id[25:21], id[20:16], id[15:11], wdata, A, rbdata);
 
     // assign
