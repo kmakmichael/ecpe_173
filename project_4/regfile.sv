@@ -1,7 +1,7 @@
 module regfile(
     input logic clk,
     input logic RegWrite,
-    input logic RegDst,
+    input logic [1:0] RegDst,
     input logic [4:0] ra,   // rs
     input logic [4:0] rb,   // rt
     input logic [4:0] rc,   // rd
@@ -22,15 +22,24 @@ module regfile(
 
     always_ff @(posedge clk) begin
         if (RegWrite) begin
-            if (RegDst) begin
-                if (rb != 5'd0) begin
-                    memory[rb] <= wdata;
-                end
-            end else begin
-                if (rc != 5'd0) begin
-                    memory[rc] <= wdata;
-                end
-            end
+            case (RegDst)
+                2'b00:  // rc
+                    if (rc != 5'd0) begin
+                        memory[rc] <= wdata; // check for == 1, 31?
+                    end
+                2'b01:  // rb
+                    if (rb != 5'd0) begin
+                        memory[rb] <= wdata;
+                    end
+                2'b10:  // ra
+                    memory[5'd31] <= wdata;
+                2'b11:  // xa
+                    memory[5'd1] <= wdata;
+                default:  
+                    if (rc != 5'd0) begin
+                        memory[rc] <= wdata;
+                    end
+            endcase
         end
     end
     

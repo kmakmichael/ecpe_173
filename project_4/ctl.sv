@@ -2,7 +2,7 @@ module ctl(
     input logic reset,
     input logic [5:0] opCode,
     input logic [5:0] funct,
-    output logic RegDst,
+    output logic [1:0] RegDst,
     output logic ALUSrc,
     output logic RegWrite,
     output logic MemWrite,
@@ -13,16 +13,18 @@ module ctl(
 );
 
     // RegDst
-    always_comb begin
+    always_comb begin   // handle interrupts
         case (opCode)
             6'b001000, // addi
             6'b001100, // adi
             6'b001101, // ori
             6'b001110, // xori
             6'b100011: // lw
-                RegDst <= 1'b1 & ~reset;
+                RegDst <= 2'b01 & ~reset;
+            6'b000011: // jal
+                RegDst <= 2'b10 & ~reset;
             default:
-                RegDst <= 1'b0 & ~reset;
+                RegDst <= 2'b00 & ~reset;
         endcase
     end
     
