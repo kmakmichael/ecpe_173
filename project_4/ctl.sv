@@ -3,7 +3,7 @@ module ctl(
     input logic [5:0] opCode,
     input logic [5:0] funct,
     output logic [1:0] RegDst,
-    output logic ALUSrc,
+    output logic [1:0] ALUSrc,
     output logic RegWrite,
     output logic MemWrite,
     output logic MemRead,
@@ -13,47 +13,50 @@ module ctl(
 );
 
     // RegDst
-    always_comb begin   // handle interrupts
+    always_comb begin   // todo: handle interrupts
         case (opCode)
             6'b001000, // addi
             6'b001100, // adi
             6'b001101, // ori
             6'b001110, // xori
             6'b100011: // lw
-                RegDst <= 2'b01 & ~reset;
+                RegDst <= 2'b01 & {~reset, ~reset};
             6'b000011: // jal
-                RegDst <= 2'b10 & ~reset;
+                RegDst <= 2'b10 & {~reset, ~reset};
             default:
-                RegDst <= 2'b00 & ~reset;
+                RegDst <= 2'b00 & {~reset, ~reset};
         endcase
     end
     
     // ALUSrc
     always_comb begin
         case (opCode)
-            6'b001000, // addi
-            6'b001100, // adi
+            6'b001000: // addi
+                ALUSrc <= 2'b11 & {~reset, ~reset};
+            6'b001100, // andi
             6'b001101, // ori
             6'b001110, // xori
             6'b100011, // lw
-            6'b101011: // sw
-                ALUSrc <= 1'b1 & ~reset;
+            6'b101011, // sw
+            6'b000100, // beq
+            6'b000101: // bne
+                ALUSrc <= 2'b10 & {~reset, ~reset};
             6'b000000:
                 case (funct)
                     6'b000000, // sll
                     6'b000010, // srl
                     6'b000011: // sra
-                        ALUSrc <= 1'b1 & ~reset;
+                        ALUSrc <= 2'b01 & {~reset, ~reset};
                     default:
-                        ALUSrc <= 1'b0;
+                        ALUSrc <= 2'b00;
                 endcase
             default:
-                ALUSrc <= 1'b0;
+                ALUSrc <= 2'b00;
         endcase
     end
 
     // RegWrite
-    always_comb begin
+    always_comb begin // todo: handle interrupts
         case (opCode)
             6'b001000, // addi
             6'b001100, // andi

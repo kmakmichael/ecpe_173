@@ -11,10 +11,10 @@ module beta(
     output logic MemWrite
 );
     // signals
-    logic ALUSrc, RegWrite, MemToReg, z, v, n;
-    logic [1:0] RegDst;
+    logic RegWrite, MemToReg, z, v, n;
+    logic [1:0] RegDst, ALUSrc;
     logic [4:0] ALUOp;
-    logic [31:0] A, B, Y, rbdata, wdata, imm;
+    logic [31:0] A, B, Y, rbdata, wdata; //, imm;
     logic [5:0] rc;
 
     // modules
@@ -29,10 +29,21 @@ module beta(
 
     // B
     always_comb begin
-        if (ALUSrc)
-            B <= imm;
-        else
-           B <= rbdata;
+        case (ALUSrc)
+            2'b00:  // register
+                B <= rbdata;
+            2'b01:  // shifts
+                B <= {26'd0, id[11:6]};
+            2'b10:  // I-format
+                B <= {16'd0, id[15:0]};
+            2'b11:  // addi
+                if (id[15])
+                    B <= {17'h1FFFF, id[14:0]};
+                else
+                    B <= {17'd0, id[14:0]};
+            default:
+                B <= rbdata;
+        endcase
     end
 
     // wdata
@@ -44,13 +55,13 @@ module beta(
     end
 
     // pad or extend
-    always_comb begin
+    /*always_comb begin
         case(id[31:26])
             6'b000000:
                 case (id[5:0])
                     6'b000000,
                     6'b000010,
-                    6'b000011:
+                    6'b000011: // shifts
                         imm <= {26'd0, id[11:6]};
                     default:
                         imm <= 32'd0;
@@ -60,7 +71,7 @@ module beta(
                     imm <= {17'h1FFFF, id[14:0]};
                 else
                     imm <= {17'd0, id[14:0]};
-             6'b001100, // andi
+            6'b001100, // andi
             6'b001101, // ori
             6'b001110, // xori
             6'b100011,  // lw
@@ -69,5 +80,5 @@ module beta(
             default:
                 imm <= 32'd0;
         endcase
-    end
+    end*/
 endmodule
