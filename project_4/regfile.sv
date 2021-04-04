@@ -33,7 +33,7 @@ module regfile(
                     end
                 2'b10:  // ra
                     memory[5'd31] <= wdata;
-                2'b11:  // xa
+                2'b11:  // xp
                     memory[5'd1] <= wdata;
                 default:  
                     if (rc != 5'd0) begin

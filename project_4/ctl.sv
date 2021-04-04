@@ -12,23 +12,30 @@ module ctl(
     output logic Branch,
     output logic [1:0] Jump,
     output logic Exception,
+    output logic irq,
     output logic [4:0] ALUOp
 );
 
     // RegDst
     always_comb begin   // todo: handle interrupts
-        case (opCode)
-            6'b001000, // addi
-            6'b001100, // adi
-            6'b001101, // ori
-            6'b001110, // xori
-            6'b100011: // lw
-                RegDst <= 2'b01 & {~reset, ~reset};
-            6'b000011: // jal
-                RegDst <= 2'b10 & {~reset, ~reset};
-            default:
-                RegDst <= 2'b00 & {~reset, ~reset};
-        endcase
+        if (irq) begin
+            RegDst <= 2'b11 & {~reset, ~reset};
+        end else if (Exception) begin
+            RegDst <= 2'b11 & {~reset, ~reset};
+        end else begin
+            case (opCode)
+                6'b001000, // addi
+                6'b001100, // adi
+                6'b001101, // ori
+                6'b001110, // xori
+                6'b100011: // lw
+                    RegDst <= 2'b01 & {~reset, ~reset};
+                6'b000011: // jal
+                    RegDst <= 2'b10 & {~reset, ~reset};
+                default:
+                    RegDst <= 2'b00 & {~reset, ~reset};
+            endcase
+        end
     end
     
     // ALUSrc
@@ -57,34 +64,41 @@ module ctl(
     end
 
     // RegWrite
-    always_comb begin // todo: handle interrupts
-        case (opCode)
-            6'b001000, // addi
-            6'b001100, // andi
-            6'b001101, // ori
-            6'b001110, // xori
-            6'b100011, // lw
-            6'b000011: // jal
-                RegWrite <= 1'b1 & ~reset;
-            6'b000000:
-                case (funct)
-                    6'b100000, // add
-                    6'b100010, // sub
-                    6'b100100, // and
-                    6'b100101, // or
-                    6'b100110, // xor
-                    6'b100111, // nor
-                    6'b101010, // slt
-                    6'b000000, // sll
-                    6'b000010, // srl
-                    6'b000011: // sra
-                        RegWrite <= 1'b1 & ~reset;
-                    default:
-                        RegWrite <= 1'b0;
-                endcase
-            default:
-                RegWrite <= 1'b0;
-        endcase
+    always_comb begin
+        if (irq) begin
+            // todo: check supervisor bit
+            RegWrite <= 1'b1 & ~reset;
+        end else if (Exception) begin
+            RegWrite <= 1'b1 & ~reset;
+        end else begin
+            case (opCode)
+                6'b001000, // addi
+                6'b001100, // andi
+                6'b001101, // ori
+                6'b001110, // xori
+                6'b100011, // lw
+                6'b000011: // jal
+                    RegWrite <= 1'b1 & ~reset;
+                6'b000000:
+                    case (funct)
+                        6'b100000, // add
+                        6'b100010, // sub
+                        6'b100100, // and
+                        6'b100101, // or
+                        6'b100110, // xor
+                        6'b100111, // nor
+                        6'b101010, // slt
+                        6'b000000, // sll
+                        6'b000010, // srl
+                        6'b000011: // sra
+                            RegWrite <= 1'b1 & ~reset;
+                        default:
+                            RegWrite <= 1'b0;
+                    endcase
+                default:
+                    RegWrite <= 1'b0;
+            endcase
+        end
     end
 
     // MemWrite
@@ -164,6 +178,8 @@ module ctl(
     // ASel
     always_comb begin
         if (opCode == 6'b000011) begin // jal
+            ASel <= 1'b1;
+        if (Exception)
             ASel <= 1'b1;
         end else begin
             ASel <= 1'b0;
