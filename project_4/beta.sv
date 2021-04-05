@@ -11,7 +11,7 @@ module beta(
     output logic MemWrite
 );
     // signals
-    logic RegWrite, MemToReg, z, v, n, ASel, Exception, Branch, pc31;
+    logic RegWrite, MemToReg, z, v, n, ASel, Exception, Branch, pc31, irqpc;
     logic [1:0] RegDst, ALUSrc, Jump;
     logic [4:0] ALUOp;
     logic [31:0] A, B, Y, radata, rbdata, wdata, pcin, pcp4, brAddr; //, imm;
@@ -19,14 +19,15 @@ module beta(
 
     // modules
     alu xalu(A, B, ALUOp, Y, z, v, n);
-    ctl xctl(reset, id[31:26], id[5:0], RegDst, ALUSrc, RegWrite, MemWrite, MemRead, MemToReg, ASel, Branch, Jump, Exception, irq, ALUOp);
-    pc xpc(clk, reset, irq, Exception, pcin, ia);
+    ctl xctl(reset, id[31:26], id[5:0], pc31, RegDst, ALUSrc, RegWrite, MemWrite, MemRead, MemToReg, ASel, Branch, Jump, Exception, irq, ALUOp);
+    pc xpc(clk, reset, irqpc, Exception, pcin, ia);
     regfile xregfile(clk, RegWrite, RegDst, id[25:21], id[20:16], id[15:11], wdata, radata, rbdata);
 
     // assign
     assign memWriteData = rbdata;
     assign memAddr = Y;
     assign pcp4 = ia + 32'd4;
+    assign irqpc = irq;
 
     // A
     always_comb begin
@@ -92,6 +93,19 @@ module beta(
             end
         end else begin
             brAddr <= pcp4;
+        end
+    end
+
+    // supervisor bit
+    always_comb begin
+        if (pc31) begin
+            if (Jump == 2'b11) begin // performing JR
+                pc31 <= pcin[31];
+            end else begin
+                pc31 <= pcp4[31];
+            end
+        end else begin
+            pc31 <= pcp4[31];
         end
     end
 

@@ -6,25 +6,19 @@ module pc(
     input logic [31:0] pcin,
     output logic [31:0] ia
 );
-    always_ff @(posedge clk or posedge reset or posedge irq) begin
-        if (reset) begin
-            ia <= 32'h8000_0000;
-        end else if (irq) begin
-            ia <= 32'h8000_0008;
-        end else if (Exception) begin
-            ia <= 32'h8000_0004;
-        end else begin
-            ia <= pcin;
-        end
-    end
-    /* orig
     always_ff @(posedge clk or posedge reset) begin
-        if (reset) begin
-            ia <= 32'd0;
-        end else begin
-            ia <= ia + 32'd4;
-        end
+        if (reset)
+            ia <= 32'h8000_0000;
+        else if (irq & ~ia[31])
+            ia <= 32'h8000_0008;
+        else if (Exception)
+            ia <= 32'h8000_0004;
+        else
+            ia <= pcin;
     end
-    */
+
+    always @(posedge irq) begin
+        $write("Interrupt detected!");
+    end
     
 endmodule

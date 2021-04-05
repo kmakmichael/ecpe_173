@@ -2,6 +2,7 @@ module ctl(
     input logic reset,
     input logic [5:0] opCode,
     input logic [5:0] funct,
+    input logic pc31,
     output logic [1:0] RegDst,
     output logic [1:0] ALUSrc,
     output logic RegWrite,
@@ -17,8 +18,8 @@ module ctl(
 );
 
     // RegDst
-    always_comb begin   // todo: handle interrupts
-        if (irq) begin
+    always_comb begin
+        if (irq & ~pc31) begin
             RegDst <= 2'b11 & {~reset, ~reset};
         end else if (Exception) begin
             RegDst <= 2'b11 & {~reset, ~reset};
@@ -65,8 +66,7 @@ module ctl(
 
     // RegWrite
     always_comb begin
-        if (irq) begin
-            // todo: check supervisor bit
+        if (irq & ~pc31) begin
             RegWrite <= 1'b1 & ~reset;
         end else if (Exception) begin
             RegWrite <= 1'b1 & ~reset;
