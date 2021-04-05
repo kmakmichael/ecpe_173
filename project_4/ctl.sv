@@ -3,6 +3,7 @@ module ctl(
     input logic [5:0] opCode,
     input logic [5:0] funct,
     input logic pc31,
+    input logic irq,
     output logic [1:0] RegDst,
     output logic [1:0] ALUSrc,
     output logic RegWrite,
@@ -13,63 +14,74 @@ module ctl(
     output logic Branch,
     output logic [1:0] Jump,
     output logic Exception,
-    output logic irq,
     output logic [4:0] ALUOp
 );
 
     // RegDst
     always_comb begin
-        if (irq & ~pc31) begin
-            RegDst <= 2'b11 & {~reset, ~reset};
+        if (reset) begin
+            RegDst <= 2'b00;
+        end else if (irq && ~pc31) begin
+            RegDst <= 2'b11;
         end else if (Exception) begin
-            RegDst <= 2'b11 & {~reset, ~reset};
+            RegDst <= 2'b11;
         end else begin
             case (opCode)
-                6'b001000, // addi
+                6'b001000, // addi 11010
                 6'b001100, // adi
                 6'b001101, // ori
                 6'b001110, // xori
                 6'b100011: // lw
-                    RegDst <= 2'b01 & {~reset, ~reset};
+                    RegDst <= 2'b01;
                 6'b000011: // jal
-                    RegDst <= 2'b10 & {~reset, ~reset};
+                    RegDst <= 2'b10;
                 default:
-                    RegDst <= 2'b00 & {~reset, ~reset};
+                    RegDst <= 2'b00;
             endcase
         end
     end
     
     // ALUSrc
     always_comb begin
-        case (opCode)
-            6'b001000: // addi
-                ALUSrc <= 2'b11 & {~reset, ~reset};
-            6'b001100, // andi
-            6'b001101, // ori
-            6'b001110, // xori
-            6'b100011, // lw
-            6'b101011: // sw
-                ALUSrc <= 2'b10 & {~reset, ~reset};
-            6'b000000:
-                case (funct)
-                    6'b000000, // sll
-                    6'b000010, // srl
-                    6'b000011: // sra
-                        ALUSrc <= 2'b01 & {~reset, ~reset};
-                    default:
-                        ALUSrc <= 2'b00;
-                endcase
-            default:
-                ALUSrc <= 2'b00;
-        endcase
+        if (reset) begin
+            ALUSrc <= 2'b00;
+        end else if (irq && ~pc31) begin
+            ALUSrc <= 2'b00;
+        end else if (Exception) begin
+            ALUSrc <= 2'b00;
+        end else begin
+            case (opCode)
+                6'b001000: // addi
+                    ALUSrc <= 2'b11;
+                6'b001100, // andi
+                6'b001101, // ori
+                6'b001110, // xori
+                6'b100011, // lw
+                6'b101011: // sw
+                    ALUSrc <= 2'b10;
+                6'b000000:
+                    case (funct)
+                        6'b000000, // sll
+                        6'b000010, // srl
+                        6'b000011: // sra
+                            ALUSrc <= 2'b01;
+                        default:
+                            ALUSrc <= 2'b00;
+                    endcase
+                default:
+                    ALUSrc <= 2'b00;
+            endcase
+        end
     end
 
     // RegWrite
     always_comb begin
-        if (irq & ~pc31) begin
-            RegWrite <= 1'b1 & ~reset;
+        if (reset) begin
+            RegWrite <= 1'b0;
+        end else if (irq && ~pc31) begin
+            RegWrite <= 1'b1;
         end else if (Exception) begin
-            RegWrite <= 1'b1 & ~reset;
+            RegWrite <= 1'b1;
         end else begin
             case (opCode)
                 6'b001000, // addi
@@ -78,7 +90,7 @@ module ctl(
                 6'b001110, // xori
                 6'b100011, // lw
                 6'b000011: // jal
-                    RegWrite <= 1'b1 & ~reset;
+                    RegWrite <= 1'b1;
                 6'b000000:
                     case (funct)
                         6'b100000, // add
@@ -91,7 +103,7 @@ module ctl(
                         6'b000000, // sll
                         6'b000010, // srl
                         6'b000011: // sra
-                            RegWrite <= 1'b1 & ~reset;
+                            RegWrite <= 1'b1;
                         default:
                             RegWrite <= 1'b0;
                     endcase
@@ -128,61 +140,77 @@ module ctl(
     end
 
     // ALUOp
-    always_comb begin
+    always_comb begin // defaults -> exceptions
         if (reset) begin
-            ALUOp <= 6'd0;
+            ALUOp <= 6'b11010;
+        end else if (irq && ~pc31) begin
+            ALUOp <= 6'b11010;
+        end else if (Exception) begin
+            ALUOp <= 6'b11010;
         end else begin
             case (opCode)
                 6'd0:
                     case (funct[5:3])
-                    3'b000:
-                        case (funct[2:0])
-                            3'b000:     ALUOp <= 5'b01000; // sll
-                            3'b010:     ALUOp <= 5'b01001; // srl
-                            3'b011:     ALUOp <= 5'b01011; // sra
-                            default:    ALUOp <= 5'b00000; // nop
-                        endcase
-                    3'b100:
-                        case (funct[2:0])
-                            3'b000:     ALUOp <= 5'b00000; // add
-                            3'b010:     ALUOp <= 5'b00001; // sub
-                            3'b100:     ALUOp <= 5'b11000; // and
-                            3'b101:     ALUOp <= 5'b11110; // or
-                            3'b110:     ALUOp <= 5'b10110; // xor
-                            3'b111:     ALUOp <= 5'b10001; // nor
-                            default:    ALUOp <= 5'b00000; // nop
-                        endcase
-                    3'b101:
-                        case (funct[2:0])
-                            3'b010:     ALUOp <= 5'b00111; // slt
-                            default:    ALUOp <= 5'b00000; // nop
-                        endcase
-                    default:
-                        ALUOp <= 5'b00000; // nop
+                        3'b000:
+                            case (funct[2:0])
+                                3'b000:     ALUOp <= 5'b01000; // sll
+                                3'b010:     ALUOp <= 5'b01001; // srl
+                                3'b011:     ALUOp <= 5'b01011; // sra
+                                default:    ALUOp <= 5'b00000; // nop
+                            endcase
+                        3'b001:
+                            case (funct[2:0])
+                                3'b001:     ALUOp <= 5'b11010; // jr
+                                default:    ALUOp <= 5'b11010; // exception
+                            endcase
+                        3'b100:
+                            case (funct[2:0])
+                                3'b000:     ALUOp <= 5'b00000; // add
+                                3'b010:     ALUOp <= 5'b00001; // sub
+                                3'b100:     ALUOp <= 5'b11000; // and
+                                3'b101:     ALUOp <= 5'b11110; // or
+                                3'b110:     ALUOp <= 5'b10110; // xor
+                                3'b111:     ALUOp <= 5'b10001; // nor
+                                default:    ALUOp <= 5'b11010; // exception
+                            endcase
+                        3'b101:
+                            case (funct[2:0])
+                                3'b010:     ALUOp <= 5'b00111; // slt
+                                default:    ALUOp <= 5'b11010; // exception
+                            endcase
+                        default:
+                            ALUOp <= 5'b11010; // nop
                     endcase
                 6'b001000:  ALUOp <= 5'b00000;  // addi
                 6'b001100:  ALUOp <= 5'b11000;  // andi
                 6'b001101:  ALUOp <= 5'b11110;  // ori
                 6'b001110:  ALUOp <= 5'b10110;  // xori
-                6'b100011:  ALUOp <= 5'b00000;  // lw
-                6'b101011:  ALUOp <= 5'b00000;  // sw
-                6'b000010:  ALUOp <= 5'b00000;  // j
-                6'b000011:  ALUOp <= 5'b00000;  // jal
+                6'b100011:  ALUOp <= 5'b11010;  // lw
+                6'b101011:  ALUOp <= 5'b11010;  // sw
+                6'b000010:  ALUOp <= 5'b11010;  // j
+                6'b000011:  ALUOp <= 5'b11010;  // jal
                 6'b000100:  ALUOp <= 5'b00001;  // beq
                 6'b000101:  ALUOp <= 5'b00001;  // bne
-                default:    ALUOp <= 5'b00000;  // nop
+                default:    ALUOp <= 5'b11010;  // exception
             endcase
         end
     end
 
     // ASel
     always_comb begin
-        if (opCode == 6'b000011) begin // jal
+        if (reset) begin
+            ASel <= 1'b0;
+        end else if (irq && ~pc31) begin
             ASel <= 1'b1;
-        if (Exception)
+        end else if (Exception) begin
             ASel <= 1'b1;
         end else begin
-            ASel <= 1'b0;
+            case (opCode)
+                6'b000011:
+                    ASel <= 1'b1;
+                default:
+                    ASel <= 1'b0;
+            endcase
         end
     end
 

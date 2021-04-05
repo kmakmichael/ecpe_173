@@ -1,7 +1,5 @@
 module beta(
-    input logic clk,
-    input logic reset,
-    input logic irq,
+    input logic clk, reset, irq,
     input logic [31:0] id,
     input logic [31:0] memReadData,
     output logic [31:0] ia,
@@ -19,15 +17,14 @@ module beta(
 
     // modules
     alu xalu(A, B, ALUOp, Y, z, v, n);
-    ctl xctl(reset, id[31:26], id[5:0], pc31, RegDst, ALUSrc, RegWrite, MemWrite, MemRead, MemToReg, ASel, Branch, Jump, Exception, irq, ALUOp);
-    pc xpc(clk, reset, irqpc, Exception, pcin, ia);
+    ctl xctl(reset, id[31:26], id[5:0], pc31, irq, RegDst, ALUSrc, RegWrite, MemWrite, MemRead, MemToReg, ASel, Branch, Jump, Exception, ALUOp);
+    pc xpc(clk, reset, irq, Exception, pcin, ia);
     regfile xregfile(clk, RegWrite, RegDst, id[25:21], id[20:16], id[15:11], wdata, radata, rbdata);
 
     // assign
     assign memWriteData = rbdata;
     assign memAddr = Y;
     assign pcp4 = ia + 32'd4;
-    assign irqpc = irq;
 
     // A
     always_comb begin
