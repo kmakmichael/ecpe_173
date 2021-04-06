@@ -12,7 +12,7 @@ vlog -reportprogress 300 -work work ctl.sv
 vlog -reportprogress 300 -work work beta.sv
 	
 ### ADD YOUR DESIGN FILES HERE FOR COMPILATION ###
-# vlog -reportprogress 300 -work work <yourfilename>.sv
+vlog -reportprogress 300 -work work flowctl.sv
 
 # Compile Testbench
 vlog -sv -reportprogress 300 -work work tests/imem4.sv
@@ -44,7 +44,7 @@ add wave -label MemWrite MemWrite
 add wave -label MemRead MemRead
 
 #### Add your debug signals here ####
-add wave -radix hex dutBeta/RegDst
+
 
 # Plot signal values
 view structure
