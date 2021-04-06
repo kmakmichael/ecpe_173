@@ -12,18 +12,18 @@ module beta(
     logic RegWrite, MemToReg, z, v, n, ASel, Exception, Branch, pc31, irqpc;
     logic [1:0] RegDst, ALUSrc, Jump;
     logic [4:0] ALUOp;
-    logic [31:0] A, B, Y, radata, rbdata, wdata, pcin, pcp4, brAddr; //, imm;
+    logic [31:0] A, B, radata, rbdata, wdata, pcnext, pcp4; //, imm;
     logic [5:0] rc;
 
     // modules
-    alu xalu(A, B, ALUOp, Y, z, v, n);
+    alu xalu(A, B, ALUOp, memAddr, z, v, n);
     ctl xctl(reset, id[31:26], id[5:0], pc31, irq, RegDst, ALUSrc, RegWrite, MemWrite, MemRead, MemToReg, ASel, Branch, Jump, Exception, ALUOp);
-    pc xpc(clk, reset, irq, Exception, pcin, ia);
+    pc xpc(clk, reset, irq, Exception, pcnext, ia);
     regfile xregfile(clk, RegWrite, RegDst, id[25:21], id[20:16], id[15:11], wdata, radata, rbdata);
+    flowctl xflowctl(pcp4, id, radata, Jump, Branch, z, pcnext);
 
     // assign
     assign memWriteData = rbdata;
-    assign memAddr = Y;
     assign pcp4 = ia + 32'd4;
 
     // A
@@ -59,45 +59,14 @@ module beta(
         if (MemToReg)
             wdata <= memReadData;
         else
-            wdata <= Y;
-    end
-
-    // Jump mux
-    always_comb begin
-        case (Jump)
-            2'b00:  // none
-                pcin <= brAddr;
-            2'b01:  // branch
-                pcin <= brAddr;
-            2'b10:  // j, jal
-                pcin <= {pcp4[31:28], id[25:0], 2'b00};
-            2'b11:  // jr
-                pcin <= radata;
-        endcase
-    end
-
-    // Branch ctl
-    always_comb begin
-        if (Branch) begin
-            if (id[26] != z) begin
-                if (id[15]) begin //sign-extend
-                    brAddr <= pcp4 + {15'h7FFF, id[14:0], 2'b00};
-                end else begin
-                    brAddr <= pcp4 + {15'd0, id[14:0], 2'b00};
-                end
-            end else begin
-                brAddr <= pcp4;
-            end
-        end else begin
-            brAddr <= pcp4;
-        end
+            wdata <= memAddr;
     end
 
     // supervisor bit
     always_comb begin
         if (pc31) begin
             if (Jump == 2'b11) begin // performing JR
-                pc31 <= pcin[31];
+                pc31 <= pcnext[31];
             end else begin
                 pc31 <= pcp4[31];
             end
