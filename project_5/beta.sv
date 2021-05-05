@@ -1,12 +1,11 @@
 module beta(
-    input logic clk, reset, irq,
+    input logic clk, reset, irq, MemReadReady,
     input logic [31:0] id,
     input logic [31:0] memReadData,
     output logic [31:0] ia,
     output logic [31:0] memAddr,
     output logic [31:0] memWriteData,
-    output logic MemRead,
-    output logic MemWrite
+    output logic MemRead, MemWrite, MemReadDone, MemHit
 );
     // signals
     logic RegWrite, MemToReg, z, v, n, ASel, Exception, Branch, pc31, irqpc;
@@ -21,6 +20,7 @@ module beta(
     pc xpc(clk, reset, irq, Exception, pcnext, ia);
     regfile xregfile(clk, RegWrite, RegDst, id[25:21], id[20:16], id[15:11], wdata, radata, rbdata);
     flowctl xflowctl(pcp4, id, radata, Jump, Branch, z, pcnext);
+    cache xcache(clk, MemRead, MemReadReady, MemReadDone, MemHit);
 
     // assign
     assign memWriteData = rbdata;
