@@ -11,7 +11,7 @@ module beta(
     logic RegWrite, MemToReg, z, v, n, ASel, Exception, Branch, pc31, irqpc;
     logic [1:0] RegDst, ALUSrc, Jump;
     logic [4:0] ALUOp;
-    logic [31:0] A, B, radata, rbdata, wdata, pcnext, pcp4; //, imm;
+    logic [31:0] A, B, radata, rbdata, wdata, pcnext, pcp4, cAddr, cData; //, imm;
     logic [5:0] rc;
 
     // modules
@@ -20,11 +20,12 @@ module beta(
     pc xpc(clk, reset, irq, Exception, pcnext, ia);
     regfile xregfile(clk, RegWrite, RegDst, id[25:21], id[20:16], id[15:11], wdata, radata, rbdata);
     flowctl xflowctl(pcp4, id, radata, Jump, Branch, z, pcnext);
-    cache xcache(clk, MemRead, MemReadReady, MemReadDone, MemHit);
+    cache xcache(clk, MemRead, MemReadReady, memAddr, MemReadDone, MemHit, cData);
 
     // assign
     assign memWriteData = rbdata;
     assign pcp4 = ia + 32'd4;
+    //assign memAddr = cAddr;
 
     // A
     always_comb begin
