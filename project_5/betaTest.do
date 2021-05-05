@@ -17,7 +17,8 @@ if {[lsearch $readTestTypes $1] >= 0 || [lsearch $writeTestTypes $1] >= 0} {
 	vlog -reportprogress 300 -work work beta.sv
 			
 	### ADD YOUR DESIGN FILES HERE FOR COMPILATION ###
-	# vlog -reportprogress 300 -work work <yourfilename>.sv
+	vlog -reportprogress 300 -work work flowctl.sv
+	vlog -reportprogress 300 -work work cache.sv
 
 	# Compile Testbench
 	vlog -sv -reportprogress 300 -work work tests/imem5.sv
