@@ -1,31 +1,31 @@
 module beta(
-    input logic clk, reset, irq, MemReadReady,
+    input logic clk, reset, irq, MemReadReady, MemWriteDone,
     input logic [31:0] id,
     input logic [31:0] memReadData,
     output logic [31:0] ia,
     output logic [31:0] memAddr,
     output logic [31:0] memWriteData,
-    output logic MemRead, MemWrite, MemReadDone, MemHit
+    output logic MemRead, MemWrite, MemReadDone, MemHit, MemWriteReady
 );
     // signals
-    logic RegWrite, MemToReg, z, v, n, ASel, Exception, Branch, pc31, irqpc;
+    logic RegWrite, MemToReg, z, v, n, ASel, Exception, Branch, pc31, irqpc, stall;
     logic [1:0] RegDst, ALUSrc, Jump;
     logic [4:0] ALUOp;
-    logic [31:0] A, B, radata, rbdata, wdata, pcnext, pcp4, cAddr, cData; //, imm;
+    logic [31:0] A, B, radata, rbdata, wdata, pcnext, pcp4, cData; //, imm;
     logic [5:0] rc;
 
     // modules
     alu xalu(A, B, ALUOp, memAddr, z, v, n);
     ctl xctl(reset, id[31:26], id[5:0], pc31, irq, RegDst, ALUSrc, RegWrite, MemWrite, MemRead, MemToReg, ASel, Branch, Jump, Exception, ALUOp);
-    pc xpc(clk, reset, irq, Exception, MemRead, pcnext, ia);
+    pc xpc(clk, reset, irq, Exception, stall, pcnext, ia);
     regfile xregfile(clk, RegWrite, RegDst, id[25:21], id[20:16], id[15:11], wdata, radata, rbdata);
     flowctl xflowctl(pcp4, id, radata, Jump, Branch, z, pcnext);
-    cache xcache(clk, MemRead, MemReadReady, memAddr, MemReadDone, MemHit, cData);
+    cache xcache(clk, memAddr, CacheWrite, cData, MemHit, cOut);
+    cachectl xcachectl(clk, MemRead, MemReadReady, MemHit, MemReadDone, MemWriteReady, CacheWrite, stall);
 
     // assign
     assign memWriteData = rbdata;
     assign pcp4 = ia + 32'd4;
-    //assign memAddr = cAddr;
 
     // A
     always_comb begin
