@@ -17,7 +17,7 @@ module beta(
     // modules
     alu xalu(A, B, ALUOp, memAddr, z, v, n);
     ctl xctl(reset, id[31:26], id[5:0], pc31, irq, RegDst, ALUSrc, RegWrite, MemWrite, MemRead, MemToReg, ASel, Branch, Jump, Exception, ALUOp);
-    pc xpc(clk, reset, irq, Exception, pcnext, ia);
+    pc xpc(clk, reset, irq, Exception, MemRead, pcnext, ia);
     regfile xregfile(clk, RegWrite, RegDst, id[25:21], id[20:16], id[15:11], wdata, radata, rbdata);
     flowctl xflowctl(pcp4, id, radata, Jump, Branch, z, pcnext);
     cache xcache(clk, MemRead, MemReadReady, memAddr, MemReadDone, MemHit, cData);
