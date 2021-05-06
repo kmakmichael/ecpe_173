@@ -61,9 +61,10 @@ if {[lsearch $readTestTypes $1] >= 0 || [lsearch $writeTestTypes $1] >= 0} {
 	
 	#### Add your debug signals here ####
 	add wave dutBeta/xcache/clk
-	add wave dutBeta/xcachectl/MemRead
-	add wave dutBeta/xcachectl/MemReadReady
-	add wave dutBeta/xcachectl/MemReadDone
+	add wave dutBeta/xcachectl/MemWrite
+	add wave dutBeta/xcachectl/MemWriteReady
+	add wave dutBeta/xcachectl/MemWriteDone
+	add wave dutBeta/MemHit
 
 	# Plot signal values
 	view structure

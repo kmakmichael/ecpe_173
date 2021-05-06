@@ -9,8 +9,8 @@ module cachectl(
 );
 
     logic miss = 1'b0, write = 1'b0;;
-    assign CacheRead = MemRead;
-    assign stall = miss;// || write;
+    assign CacheRead = MemRead || MemWrite;
+    assign stall = miss || write;
     assign MemReadDone = miss & MemHit;
     assign MemWriteReady = write & MemHit;
 
@@ -31,12 +31,13 @@ module cachectl(
         end
     end
     // stop stalling for write
-    always_ff @(negedge MemWriteDone) begin
-        write <= 1'b0;
+    always_ff @(negedge clk) begin
+        if (MemWriteDone)
+            write <= 1'b0;
     end
 
     always_comb begin
-        CacheWrite <= (MemReadReady & ~MemHit);// || (MemWrite & ~MemHit);
+        CacheWrite <= (MemReadReady & ~MemHit) || (MemWrite & ~MemHit);
     end
 
 

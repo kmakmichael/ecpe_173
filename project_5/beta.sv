@@ -1,14 +1,14 @@
 module beta(
-    input logic clk, reset, irq, MemReadReady, //MemWriteDone,
+    input logic clk, reset, irq, MemReadReady, MemWriteDone,
     input logic [31:0] id,
     input logic [31:0] memReadData,
     output logic [31:0] ia,
     output logic [31:0] memAddr,
     output logic [31:0] memWriteData,
-    output logic MemRead, MemWrite, MemReadDone, MemHit//, MemWriteReady
+    output logic MemRead, MemWrite, MemReadDone, MemHit, MemWriteReady
 );
     // signals
-    logic RegWrite, MemToReg, z, v, n, ASel, Exception, Branch, pc31, irqpc, CacheRead, stall, MemWriteDone, MemWriteReady;
+    logic RegWrite, MemToReg, z, v, n, ASel, Exception, Branch, pc31, irqpc, CacheRead, stall;//, MemWriteDone, MemWriteReady;
     logic [1:0] RegDst, ALUSrc, Jump;
     logic [4:0] ALUOp;
     logic [31:0] A, B, radata, rbdata, wdata, pcnext, pcp4, cAddr, cData, cOut;
@@ -24,7 +24,7 @@ module beta(
     cachectl xcachectl(clk, MemRead, MemReadReady, MemWrite, MemWriteDone, MemHit, MemReadDone, CacheRead, MemWriteReady, CacheWrite, stall);
 
     // assign
-    assign memWriteData = rbdata;
+    assign memWriteData = MemWrite ? cOut : rbdata;
     assign pcp4 = ia + 32'd4;
 
     // A
