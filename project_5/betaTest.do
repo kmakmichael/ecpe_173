@@ -18,7 +18,8 @@ if {[lsearch $readTestTypes $1] >= 0 || [lsearch $writeTestTypes $1] >= 0} {
 			
 	### ADD YOUR DESIGN FILES HERE FOR COMPILATION ###
 	vlog -reportprogress 300 -work work flowctl.sv
-	vlog -reportprogress 300 -work work cache.sv
+	vlog -reportprogress 300 -work work -suppress 7061 cache.sv
+	vlog -reportprogress 300 -work work cachectl.sv
 
 	# Compile Testbench
 	vlog -sv -reportprogress 300 -work work tests/imem5.sv
@@ -59,6 +60,10 @@ if {[lsearch $readTestTypes $1] >= 0 || [lsearch $writeTestTypes $1] >= 0} {
 	add wave -label MemRead MemRead
 	
 	#### Add your debug signals here ####
+	add wave dutBeta/xcache/clk
+	add wave dutBeta/xcachectl/MemRead
+	add wave dutBeta/xcachectl/MemReadReady
+	add wave dutBeta/xcachectl/MemReadDone
 
 	# Plot signal values
 	view structure

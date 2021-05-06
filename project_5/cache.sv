@@ -7,9 +7,10 @@ typedef struct packed {
 module cache(
     input logic clk, 
     input logic [31:0] addr,
+    input logic rden,
     input logic wren,
     input logic [31:0] wrData,
-    output logic MemHit,
+    output logic MemHit = 1'b0,
     output logic [31:0] q
 );
     entry [63:0] c_mem;
@@ -23,10 +24,10 @@ module cache(
     logic [5:0] indx;
     assign tag = addr[31:6];
     assign indx = addr[5:0];
-    assign q = c_mem[rdAddr[5:0]].data;
+    assign q = c_mem[indx].data;
 
     always_comb begin
-        if (MemRead) begin
+        if (rden) begin
             if (c_mem[indx].valid == 1'b1) begin
                 if (c_mem[indx].tag == tag) begin
                     MemHit <= 1'b1;

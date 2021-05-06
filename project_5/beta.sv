@@ -1,17 +1,17 @@
 module beta(
-    input logic clk, reset, irq, MemReadReady, MemWriteDone,
+    input logic clk, reset, irq, MemReadReady, //MemWriteDone,
     input logic [31:0] id,
     input logic [31:0] memReadData,
     output logic [31:0] ia,
     output logic [31:0] memAddr,
     output logic [31:0] memWriteData,
-    output logic MemRead, MemWrite, MemReadDone, MemHit, MemWriteReady
+    output logic MemRead, MemWrite, MemReadDone, MemHit//, MemWriteReady
 );
     // signals
-    logic RegWrite, MemToReg, z, v, n, ASel, Exception, Branch, pc31, irqpc, stall;
+    logic RegWrite, MemToReg, z, v, n, ASel, Exception, Branch, pc31, irqpc, CacheRead, stall, MemWriteDone, MemWriteReady;
     logic [1:0] RegDst, ALUSrc, Jump;
     logic [4:0] ALUOp;
-    logic [31:0] A, B, radata, rbdata, wdata, pcnext, pcp4, cData; //, imm;
+    logic [31:0] A, B, radata, rbdata, wdata, pcnext, pcp4, cAddr, cData, cOut;
     logic [5:0] rc;
 
     // modules
@@ -20,8 +20,8 @@ module beta(
     pc xpc(clk, reset, irq, Exception, stall, pcnext, ia);
     regfile xregfile(clk, RegWrite, RegDst, id[25:21], id[20:16], id[15:11], wdata, radata, rbdata);
     flowctl xflowctl(pcp4, id, radata, Jump, Branch, z, pcnext);
-    cache xcache(clk, memAddr, CacheWrite, cData, MemHit, cOut);
-    cachectl xcachectl(clk, MemRead, MemReadReady, MemHit, MemReadDone, MemWriteReady, CacheWrite, stall);
+    cache xcache(clk, memAddr, CacheRead, CacheWrite, cData, MemHit, cOut);
+    cachectl xcachectl(clk, MemRead, MemReadReady, MemWrite, MemWriteDone, MemHit, MemReadDone, CacheRead, MemWriteReady, CacheWrite, stall);
 
     // assign
     assign memWriteData = rbdata;
@@ -74,6 +74,14 @@ module beta(
         end else begin
             pc31 <= pcp4[31];
         end
+    end
+
+    // write from mem to cache on read miss
+    always_comb begin
+        if (MemRead)
+            cData <= memReadData;
+        else
+            cData <= rbdata;
     end
 
 endmodule
