@@ -185,8 +185,8 @@ module ctl(
                 6'b001100:  ALUOp <= 5'b11000;  // andi
                 6'b001101:  ALUOp <= 5'b11110;  // ori
                 6'b001110:  ALUOp <= 5'b10110;  // xori
-                6'b100011:  ALUOp <= 5'b11010;  // lw
-                6'b101011:  ALUOp <= 5'b11010;  // sw
+                6'b100011:  ALUOp <= 5'b00000;  // lw
+                6'b101011:  ALUOp <= 5'b00000;  // sw
                 6'b000010:  ALUOp <= 5'b11010;  // j
                 6'b000011:  ALUOp <= 5'b11010;  // jal
                 6'b000100:  ALUOp <= 5'b00001;  // beq
